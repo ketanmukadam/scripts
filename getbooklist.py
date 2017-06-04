@@ -19,15 +19,18 @@ def getpage(inurl):
 def main(options):
     soup = getpage(url+'/list/tag/'+options.tag)
     print(soup.title.string)
-    listlink = list()
+    listoflinks = list()
+    booklist = list()
     for links in soup.find_all('a', href=re.compile('/list/show')):
-        listlink.append(links.get('href'))
-    listlink = set(listlink)
+        linkele = links.get('href')
+        if not linkele in listoflinks : listoflinks.append(linkele)
     print("BookList with rating > %d NumRating = %d" % (float(options.rating), int(options.numrate)))
-    for link in listlink:
+    print('Scraping links', end='', flush=True)
+    for link in listoflinks:
         s = getpage(url+link)
-        for booktitle in s.find_all('table', class_='tableList js-dataTooltip'):
-            bookitems = booktitle.find_all('tr', itemtype="http://schema.org/Book")
+        print('.', end='', flush=True)
+        for booktable in s.find_all('table', class_='tableList js-dataTooltip'):
+            bookitems = booktable.find_all('tr', itemtype="http://schema.org/Book")
             for bookitem in bookitems:
                 rating = bookitem.find('span', class_='minirating')
                 try:
@@ -37,7 +40,10 @@ def main(options):
                 if float(avgr) > float(options.rating) and int(numrate.replace(',','')) > int(options.numrate):
                     bookTitle = bookitem.find('a', class_='bookTitle')
                     authorName = bookitem.find('a', class_='authorName')
-                    print(bookTitle.text.strip()+' ==> '+authorName.text.strip())
+                    bookelement = bookTitle.text.strip()+' ==> '+authorName.text.strip()
+                    if not bookelement in booklist : booklist.append(bookelement)
+    booklist.sort(key=lambda x:x.split('==>')[-1].strip())
+    print(booklist)
 
 def argparser():
     parser = OptionParser(usage="usage: %prog [-t, --tag | -c, --count]")
