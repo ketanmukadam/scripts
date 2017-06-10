@@ -5,6 +5,7 @@ from optparse import OptionParser
 from bs4 import BeautifulSoup as BS
 import urllib3
 import certifi
+import pickle
 
 url = "https://www.goodreads.com"
 header = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/536.26.17 (KHTML, like Gecko) Version/6.0.2 Safari/536.26.17'
@@ -16,16 +17,21 @@ def getpage(inurl):
     soup = BS(r.data,"lxml")
     return soup
 
-def main(options):
-    soup = getpage(url+'/list/tag/'+options.tag)
-    print(soup.title.string)
-    listoflinks = list()
+def fileloadstore(filename, booklist=None, oper=True):
+    tmpbooklist = list()
+    try:
+        tmpbooklist = pickle.load(open(filename,'rb'))
+    except (OSError, IOError) as e:
+        print('%s not found' % filename)
+    if not oper: # Store Operation
+       if tmpbooklist != booklist:
+          for item in booklist:
+              if not item in tmpbooklist: tmpbooklist.append(item)  
+          pickle.dump(tmpbooklist, open(filename,'wb'))
+    return tmpbooklist
+
+def scrapelinks(listoflinks, count):
     booklist = list()
-    for links in soup.find_all('a', href=re.compile('/list/show')):
-        linkele = links.get('href')
-        if not linkele in listoflinks : listoflinks.append(linkele)
-    print("BookList with rating > %d NumRating = %d" % (float(options.rating), int(options.numrate)))
-    print('Scraping links', end='', flush=True)
     for link in listoflinks:
         s = getpage(url+link)
         print('.', end='', flush=True)
@@ -42,11 +48,24 @@ def main(options):
                     authorName = bookitem.find('a', class_='authorName')
                     bookelement = bookTitle.text.strip()+' ==> '+authorName.text.strip()
                     if not bookelement in booklist : booklist.append(bookelement)
+                    if count == len(booklist) : return booklist
+
+def main(options):
+    soup = getpage(url+'/list/tag/'+options.tag)
+    print(soup.title.string)
+    listoflinks = list()
+    for links in soup.find_all('a', href=re.compile('/list/show')):
+        linkele = links.get('href')
+        if not linkele in listoflinks : listoflinks.append(linkele)
+    print("BookList with rating > %.2f Minimum Number of Ratings = %d" % (float(options.rating), int(options.numrate)))
+    print('Scraping links', end='', flush=True)
+    booklist = scrapelinks(listoflinks, int(options.count))
     booklist.sort(key=lambda x:x.split('==>')[-1].strip())
-    print(booklist)
+    print('Books Found:--> ')
+    print(fileloadstore("booklist.p",booklist,False))
 
 def argparser():
-    parser = OptionParser(usage="usage: %prog [-t, --tag | -c, --count]")
+    parser = OptionParser(usage="usage: %prog [options]")
     parser.add_option(
         "-t","--tag", dest="tag", help="goodread tag to search", default="investing")
     parser.add_option(
