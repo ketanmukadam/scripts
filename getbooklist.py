@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import sys
 import re
+import random
 from optparse import OptionParser
 from bs4 import BeautifulSoup as BS
 import urllib3
@@ -32,6 +33,7 @@ def fileloadstore(filename, booklist=None, oper=True):
 
 def scrapelinks(listoflinks, count):
     booklist = list()
+    random.shuffle(listoflinks)
     for link in listoflinks:
         s = getpage(url+link)
         print('.', end='', flush=True)
@@ -61,8 +63,8 @@ def main(options):
     print('Scraping links', end='', flush=True)
     booklist = scrapelinks(listoflinks, int(options.count))
     booklist.sort(key=lambda x:x.split('==>')[-1].strip())
-    print('Books Found:--> ')
-    print(fileloadstore("booklist.p",booklist,False))
+    print(':--> ')
+    print(*fileloadstore("booklist.p",booklist,False), sep='\n')
 
 def argparser():
     parser = OptionParser(usage="usage: %prog [options]")
