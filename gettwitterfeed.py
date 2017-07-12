@@ -15,16 +15,19 @@ from selenium.common.exceptions import NoSuchElementException
 
 def getpage(inurl, tweet_count, fname):
     """
-    Get the HTML page from input url 
+    Get the HTML page from input twitter url 
 
-    This function gets the html page from input url
+    This function gets the twitter feed page from the url 
     It parses using lxml in beautifulsoup and returns
     the soup object
 
     Parameters
     ---------
     inurl : The url to parse 
-    
+    tweet_count : Number of tweets to get. Assuming 15 tweets 
+                  per page, it will scroll the twitter feed
+    fname : pickle filename to store/load the tweet page
+
     Returns
     -------
     soup : beautifulsoup object of parsed url 
@@ -60,21 +63,19 @@ def getpage(inurl, tweet_count, fname):
 
 def scrapetweets(soup, count):
     """
-    Scrape all the links in the input upto count 
+    Scrape all the tweets from the soup object upto count 
 
-    This function will go through all the links in the input list
-    It will collect the list of books with rating > input rating 
-    and number of ratings > input number of ratings
-    The maximum number of books collected is upto input count
+    This function will go through the soup object and scrape 
+    all the tweets upto count
     
     Parameters
     ---------
-    listoflinks: List containing the links to goodread libraries
-    count : Number of books to collect
+    soup : soup object of the twitter feed page 
+    count : Number of latest tweets to display 
     
     Returns
     -------
-    booklist : Return the list of books collected 
+    None 
     """
     for tweet in soup.find_all("div",class_="js-tweet-text-container"):
         print(tweet.text)
@@ -82,9 +83,7 @@ def scrapetweets(soup, count):
 def main(options):
     """
     Main function of program
-    It will scrape the goodreads url based on the input tag
-    Collects the list of books from all book libraries (upto max count)
-    Stores the book list in the pickle database
+    It will scrape the twitter feed based on the input username 
     
     Parameters
     ---------
