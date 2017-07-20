@@ -117,21 +117,24 @@ def scrapebookshelf(soup, skip_count, get_count):
     """
     booklist = list()
     driver = webdriver.PhantomJS()
-    for tableentry in soup.find_all("tbody",id="booksBody"):
-        rows = tableentry.find_all("tr")
-        for row in rows:
-            if skip_count:
-               skip_count -= 1
-               continue
-            if not get_count: break
-            titlecols = row.find_all("td", attrs={"class" : "field title"})
-            authorcols = row.find_all("td", attrs={"class" : "field author"})
-            titlecols = [ele.find("div",attrs={"class" : "value"}).text.strip() for ele in titlecols if ele]
-            authorcols = [ele.find("div",attrs={"class" : "value"}).text.strip() for ele in authorcols if ele]
-            for t, a in zip(titlecols, authorcols):
-                isbn = scrapebookisbn(driver,t) 
-                booklist.append(t+"  "+a+"  "+isbn)
-            get_count -= 1
+    try:
+        for tableentry in soup.find_all("tbody",id="booksBody"):
+            rows = tableentry.find_all("tr")
+            for row in rows:
+                if skip_count:
+                   skip_count -= 1
+                   continue
+                if not get_count: break
+                titlecols = row.find_all("td", attrs={"class" : "field title"})
+                authorcols = row.find_all("td", attrs={"class" : "field author"})
+                titlecols = [ele.find("div",attrs={"class" : "value"}).text.strip() for ele in titlecols if ele]
+                authorcols = [ele.find("div",attrs={"class" : "value"}).text.strip() for ele in authorcols if ele]
+                for t, a in zip(titlecols, authorcols):
+                    isbn = scrapebookisbn(driver,t) 
+                    booklist.append(t+"  "+a+"  "+isbn)
+                get_count -= 1
+    except KeyboardInterrupt:
+            print("Ctrl-C pressed, saving data and exiting...")
     print(booklist)
     try: 
        ftxt = open('booklist.txt','w')
