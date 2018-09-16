@@ -37,6 +37,16 @@ Here is the summary of all scripts
 			Options:
 			-h, --help                           show this help message and exit
 			-s SEARCHTEXT, --srchtxt=SEARCHTEXT  text for search
+   * `bugz.py` - Get attachments from a specific bug or specific query url. It depends on the [Bugzilla](https://pypi.org/project/python-bugzilla/1.1.0/) package
+	 
+			Usage: bugz.py [options]
+			Options:
+			  -h, --help              show this help message and exit
+			  -u BZ_URL, --url=BZ_URL Bugzilla URL
+			  -q Q_URL, --query=Q_URL Bugzilla Query URL
+			  -b BUGID, --bugid=BUGID Bug Id
+			  -v, --verbose           Enable Logs
+
 
 ## License
 
